@@ -6,3 +6,22 @@ execute:
   warning: false
   message: false
 ---
+
+# Set-up
+
+```{r libraries}
+library(tidyverse)
+library(here)
+library(lterdatasampler)
+library(dplyr)
+```
+
+```{r read-in-data}
+fishes <- read_csv(here("data", "ntl6_v12.csv"))
+```
+
+```{r filtering-data}
+perch_data <- fishes %>%
+  filter(spname=="YELLOWPERCH") %>% 
+  subset(select = c(year4, spname, length, weight))
+```
