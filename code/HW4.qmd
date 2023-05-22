@@ -13,7 +13,6 @@ execute:
 library(tidyverse)
 library(here)
 library(lterdatasampler)
-library(dplyr)
 ```
 
 ```{r read-in-data}
