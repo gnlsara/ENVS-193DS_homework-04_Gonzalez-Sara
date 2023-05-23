@@ -13,6 +13,7 @@ execute:
 library(tidyverse)
 library(here)
 library(lterdatasampler)
+library(naniar)
 ```
 
 ```{r read-in-data}
@@ -23,4 +24,26 @@ fishes <- read_csv(here("data", "ntl6_v12.csv"))
 perch_data <- fishes %>%
   filter(spname=="YELLOWPERCH") %>% 
   subset(select = c(year4, spname, length, weight))
+```
+
+# Problem 1
+
+## Hypotheses
+
+1.  Mathematical Hypotheses
+
+    1.  Null: The predictor variable does not predict the response variable.
+    2.  Alternative: The predictor variable does predict the response variable.
+
+    Biological Hypotheses
+
+    1.  Null: Fish length does not significantly predict fish weight for trout perch.
+    2.  Alternative: Fish length significantly predicts fish weight for trout perch.
+
+## Missing Data
+
+2.  
+
+```{r}
+
 ```
