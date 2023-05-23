@@ -1,0 +1,134 @@
+---
+title: "Homework 4"
+author: "Sara Gonzalez"
+date: "May 22, 2023"
+output: word_document
+execute:
+  warning: false
+  message: false
+---
+# Set-up
+
+```{r libraries}
+library(tidyverse)
+library(here)
+library(lterdatasampler)
+library(naniar)
+library(flextable)
+library(car)
+library(performance)
+library(broom)
+library(ggeffects)
+```
+
+
+```{r read-in-data, warning=FALSE, message=FALSE}
+# organize using here package
+fishes <- read_csv(here("data", "ntl6_v12.csv"))
+```
+
+
+```{r filtering-data}
+# filter data based on what columns we need
+perch_data <- fishes %>%
+  filter(spname=="YELLOWPERCH") %>% 
+  subset(select = c(year4, spname, length, weight))
+```
+
+# Problem 1
+
+## Hypotheses
+
+1.  Mathematical Hypotheses
+
+    1. Null: The predictor variable does not predict the response variable.
+    2.  Alternative: The predictor variable does predict the response variable.
+
+    Biological Hypotheses
+
+    1.  Null: Fish length does not significantly predict fish weight for trout perch.
+    2.  Alternative: Fish length significantly predicts fish weight for trout perch.
+
+## Missing Data
+
+2.  
+
+```{r missing-data-vis}
+gg_miss_var(perch_data)+
+  labs(title = "Missing Data", caption = "The missing data may be relevant to the hypotheses because 
+       there are no missing values for length, but a lot for weight.") # added title and caption to plot
+```
+
+## Test
+
+3.  
+
+```{r linear-model-perch}
+perch_model <- lm(weight ~ length, data = perch_data)
+perch_model  # y intercept and slope for fish length
+```
+
+## Check Assumptions
+
+4.  
+
+```{r checking-assumptions}
+# to display all four at once:
+par(mfrow = c(2,2)) # set up 2 x 2 grid
+plot(perch_model)
+```
+
+5.  The residual vs. fitted plot showcases the variance and tests for homoscedasticity. Since the residuals are relatively even and randomly distributed, I would say this meets the homoscedastic assumption.
+    The normal qq plot tests for normal distribution. Since it is for the most part on the dotted line, I think the data meets the normal distribution assumption.
+    The scale-location plot essentially says the same thing as Residuals vs Fitted, except using the square root of the standardized residuals. Again, the data looks randomly distributed, so I would say it is another way to show that the homoscedastic assumption is met.
+    The residuals vs leverage plot tells you if there are any influential outliers. There are no outliers outside the dotted line on the left side, I will say none of the outliers are influential towards the model estimates.
+
+## Results
+
+6.  summarize
+
+```{r summary}
+summary(perch_model)
+```
+
+7.  ANOVA table
+
+```{r table}
+model_squares <- anova(perch_model) # use anova to make table
+model_squares
+model_squares_table <- tidy(model_squares) %>% 
+  mutate(p.value = case_when(
+    p.value < 0.001 ~ "< 0.001")) %>% 
+  flextable() %>% 
+  set_header_labels(df = "Degrees of Freedom", sumsq = "Sum of Squares", meansq = "Mean of Squares") # adding more informative titles
+model_squares_table
+```
+
+8.  The ANOVA table relates to the information from the summary object in that it extract information from the summary table (p-value and degrees of freedom) and tells you relevant information about degrees of freedom, test statistic, p-value, R\^2 as well as where the latter three came from.
+
+9.  Results Summary
+    We found that our model including length significantly predicted the weight of the perch (F(1, 12771) = 49,330, p < 0.001, α = 0.05). With a 95% confidence interval, we found that for every unit increase in weight, there is a 0.83 ± 0.004 cm increase in length. 
+
+10. Visualization
+
+```{r pulling-out-predictions}
+predictions <- ggpredict(perch_model, terms = "length")
+View(predictions) # terms corresponds to whatever predictor was in model
+```
+
+```{r plotting-predictions, warning=FALSE, message=FALSE}
+plot_predictions <- ggplot(data = perch_data, aes(x = length, y = weight))+
+  geom_point() + # first plot underlying data
+  # plotting model predictions from predictions object from ggeffects
+  geom_line(data = predictions, aes(x = x, y = predicted), color = "blue", linewidth = 1) +
+  geom_ribbon(data = predictions, aes(x = x, y = predicted, ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  labs(x = "Length (cm)", y = "Weight (g)", title = "The Weight for Trout Perch at Different Lengths", caption = "The weights of trout perch at a given length from North Temperate Lakes LTER. Black points 
+       represent fish weights at a particular length. Blue line represents the trend in which the data follows. ") +
+  theme_classic()+
+  theme(text = element_text(family = "Times New Roman"),
+axis.title = element_text(size = 14),
+  )
+plot_predictions
+```
+
+link to repo: https://github.com/gnlsara/ENVS-193DS_homework-04_Gonzalez-Sara
