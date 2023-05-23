@@ -1,6 +1,7 @@
 ---
 title: "Homework 4"
 author: "Sara Gonzalez"
+date: May 22, 2023
 format: html
 execute: 
   warning: false
@@ -91,7 +92,7 @@ summary(perch_model)
 
 7.  ANOVA table
 
-```{r making-a-table}
+```{r table}
 model_squares <- anova(perch_model) # use anova to make table
 model_squares
 model_squares_table <- tidy(model_squares) %>% 
